@@ -97,7 +97,7 @@ def render_razv(state):
 
 encoded_shape = (4, 16)
 
-def encode_inplace(target, state):
+def encode_inplace(state):
     """
     Encode square into existig zeroed numpy array
     Follows encoding described in paper https://arxiv.org/abs/1805.07470
@@ -105,13 +105,31 @@ def encode_inplace(target, state):
     :param state: state to be encoded
     """
     assert isinstance(state, State)
+    target=np.zeros(encoded_shape)
     a=state.sq_pos
     for pos in range(len(a)):
         target[a[pos], pos] = 1
+    return target
+
+def state_cost_estimation(state) :
+    """
+    Estimates cost of state from viewpoint of squares mutual arrangement
+    """
+    def GetHorizontalAlingment(a) :
+        r=[i for i, j in zip(a[0:-1], a[1:]) if i == j]
+        return len(r)
+
+    assert isinstance(state, State)
+    a=state.sq_pos
+    s=0
+    for i in range(N) :
+        s=s+GetHorizontalAlingment(a[i*N:(i+1)*N])
+    return s
 
 # register env
 _env.register(_env.SquareEnv(name="square4x4", state_type=State, action_type=Action_Type, initial_state=initial_state,
                            is_goal_pred=is_initial, action_enum=Action,
                            transform_func=transform, inverse_action_func=inverse_action,
                            same_layer_action=SameLayerAction,
-                           render_func=render_razv, encoded_shape=encoded_shape, encode_func=encode_inplace))
+                           render_func=render_razv, encoded_shape=encoded_shape, encode_func=encode_inplace,
+                           state_cost_func=state_cost_estimation))

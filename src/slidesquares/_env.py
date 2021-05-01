@@ -12,7 +12,8 @@ class SquareEnv:
     def __init__(self, name, state_type, action_type, initial_state, is_goal_pred,
                  action_enum, transform_func, inverse_action_func,
                  same_layer_action,
-                 render_func, encoded_shape, encode_func):
+                 render_func, encoded_shape, encode_func,
+                 state_cost_func):
         self.name = name
         self._state_type = state_type
         self._action_type = action_type
@@ -25,6 +26,7 @@ class SquareEnv:
         self._render_func = render_func
         self.encoded_shape = encoded_shape
         self._encode_func = encode_func
+        self._state_cost_func=state_cost_func
 
     def __repr__(self):
         return "SquareEnv(%r)" % self.name
@@ -46,9 +48,9 @@ class SquareEnv:
         assert isinstance(state, self._state_type)
         return self._render_func(state)
 
-    def encode_inplace(self, target, state):
+    def encode_inplace(self, state):
         assert isinstance(state, self._state_type)
-        return self._encode_func(target, state)
+        return self._encode_func(state)
 
     # Utility functions
     def sample_action(self, prev_action=None):
@@ -111,6 +113,9 @@ class SquareEnv:
             res_states.append(new_state)
             res_flags.append(is_init)
         return res_states, res_flags
+
+    def state_cost(self, state):
+        return self._state_cost_func(state)
 
 
 def register(square_env):

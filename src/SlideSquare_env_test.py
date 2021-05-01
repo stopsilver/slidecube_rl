@@ -25,10 +25,19 @@ square_env=slidesquares.get(slidesquare_type)
 # print(b)
 # print(' ')
 
-a=square_env.scramble((square_env.action_enum[23],square_env.action_enum[0]))
-rn=square_env._render_func(a)
-print(rn)
+# a=square_env.scramble((square_env.action_enum[23],square_env.action_enum[0]))
+# rn=square_env._render_func(a)
+# print(rn)
 
 # a=square_env.scramble_square(20)
 # rn=square_env._render_func(a[-1][1])
 # print(rn)
+
+# rn=square_env._render_func(square_env.initial_state)
+# print(rn)
+# print(square_env.state_cost(square_env.initial_state))
+
+a=square_env._transform_func(square_env.initial_state,square_env.action_enum[23])
+rn=square_env._render_func(a)
+print(rn)
+print(square_env.state_cost(a))
