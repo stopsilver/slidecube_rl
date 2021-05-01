@@ -24,9 +24,8 @@ model.compile(loss=keras.losses.MeanSquaredError(),
 # training
 a=square_env.scramble_square(20)    # initial state
 state=a[-1][1]
-state_cost=square_env.state_cost(state)
 
-alpha=0.5
+alpha=0.01
 gamma=0.9
 
 while 1 :
@@ -39,8 +38,8 @@ while 1 :
     action=square_env.sample_action()
     new_state=square_env.transform(state,action)
     # compute reward (difference of state costs)
-    new_state_cost=square_env.state_cost(new_state)
-    R=new_state_cost-state_cost
+    # new_state_cost=square_env.state_cost(new_state)
+    R=square_env.state_cost(state)
     # next state_value
     new_state_enc=np.reshape(
             np.array(np.ravel(square_env.encode_inplace(new_state))),
@@ -51,5 +50,4 @@ while 1 :
     # train net
     model.fit(curr_state_enc,Vt,epochs=1)
     # update states
-    state_cost=new_state_cost
     state=new_state
