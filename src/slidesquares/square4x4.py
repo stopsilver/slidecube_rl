@@ -9,7 +9,7 @@ from . import _common
 State = collections.namedtuple("State", field_names=['sq_pos'])
 Action_Type = collections.namedtuple("Action", field_names=['actidx','actstr'])
 
-N=4
+N=2
 initial_state = State(sq_pos=tuple(itertools.chain.from_iterable(itertools.repeat(x, N) for x in range(N))))
 
 ### Global Init
