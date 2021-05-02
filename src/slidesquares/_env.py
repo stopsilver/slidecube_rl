@@ -13,7 +13,7 @@ class SquareEnv:
                  action_enum, transform_func, inverse_action_func,
                  same_layer_action,
                  render_func, encoded_shape, encode_func,
-                 state_cost_func):
+                 state_cost_func, convert_to_state_func):
         self.name = name
         self._state_type = state_type
         self._action_type = action_type
@@ -27,6 +27,7 @@ class SquareEnv:
         self.encoded_shape = encoded_shape
         self._encode_func = encode_func
         self._state_cost_func=state_cost_func
+        self._convert_to_state_func=convert_to_state_func
 
     def __repr__(self):
         return "SquareEnv(%r)" % self.name
@@ -116,6 +117,9 @@ class SquareEnv:
 
     def state_cost(self, state):
         return self._state_cost_func(state)
+
+    def ConvertToState(self,a):
+        return self._convert_to_state_func(a)
 
 
 def register(square_env):

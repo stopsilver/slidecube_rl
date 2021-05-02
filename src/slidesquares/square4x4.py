@@ -9,7 +9,7 @@ from . import _common
 State = collections.namedtuple("State", field_names=['sq_pos'])
 Action_Type = collections.namedtuple("Action", field_names=['actidx','actstr'])
 
-N=2
+N=3
 initial_state = State(sq_pos=tuple(itertools.chain.from_iterable(itertools.repeat(x, N) for x in range(N))))
 
 ### Global Init
@@ -95,7 +95,7 @@ def render_razv(state):
         r=r+'\n'
     return r
 
-encoded_shape = (4, 16)
+encoded_shape = (N, N*N)
 
 def encode_inplace(state):
     """
@@ -126,10 +126,13 @@ def state_cost_estimation(state) :
         s=s+GetHorizontalAlingment(a[i*N:(i+1)*N])
     return s
 
+def convert_to_state(a) :
+    return State(sq_pos=tuple(a))
+
 # register env
 _env.register(_env.SquareEnv(name="square4x4", state_type=State, action_type=Action_Type, initial_state=initial_state,
                            is_goal_pred=is_initial, action_enum=Action,
                            transform_func=transform, inverse_action_func=inverse_action,
                            same_layer_action=SameLayerAction,
                            render_func=render_razv, encoded_shape=encoded_shape, encode_func=encode_inplace,
-                           state_cost_func=state_cost_estimation))
+                           state_cost_func=state_cost_estimation, convert_to_state_func=convert_to_state))
