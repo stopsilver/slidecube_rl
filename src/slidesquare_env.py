@@ -13,7 +13,7 @@ Action_Type = collections.namedtuple("Action", field_names=['actidx','actstr'])
 class SquareEnv:
     def __init__(self, N):
 
-        self.N=3
+        self.N=N
         self.initial_state = State_type(sq_pos=tuple(itertools.chain.from_iterable(itertools.repeat(x, N) for x in range(N))))
 
         ### Global Init
@@ -62,7 +62,7 @@ class SquareEnv:
         self.encoded_shape = (N, N*N)
 
         # colors (for visualization)
-        sq_colors = ['W','R','G','B']   # currently upto 4x4
+        self.sq_colors = ['W','R','G','B']   # currently upto 4x4
 ### /Global Init
 
 
@@ -112,13 +112,13 @@ class SquareEnv:
         return self._inverse_action[action]
 
     def render(self, state):
-        assert isinstance(state, State)
+        assert isinstance(state, State_type)
         a=state.sq_pos
         r=''
         k=0
-        for i in range(N) :
-            for j in range(N) :
-                r=r+sq_colors[a[k]]
+        for i in range(self.N) :
+            for j in range(self.N) :
+                r=r+self.sq_colors[a[k]]
                 k=k+1
             r=r+'\n'
         return r
@@ -138,8 +138,8 @@ class SquareEnv:
         return target
 
     # Utility functions
-    def _same_layer_action(mov1,nov2):
-        M=N-1
+    def _same_layer_action(self,mov1,mov2):
+        M=self.N-1
         if int(mov1[0]/M)==int(mov2[0]/M) :
             return 1
         return 0
