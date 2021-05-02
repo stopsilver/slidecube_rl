@@ -1,11 +1,13 @@
 ﻿# SlideSquare_DP_statevalue.py
 
 import numpy as np
-import slidesquares
+from slidesquare_env import SquareEnv
 
-slidesquare_type='square4x4'   # in reality "2x2"
+# slidesquare_type='square4x4'   # in reality "2x2"
 
-square_env=slidesquares.get(slidesquare_type)
+# square_env=slidesquares.get(slidesquare_type)
+
+square_env=SquareEnv(3)
 
 ## generate list of all states
 N=square_env.encoded_shape[0]
