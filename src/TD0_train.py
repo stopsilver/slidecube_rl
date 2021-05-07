@@ -7,12 +7,16 @@ from tensorflow.keras.layers import Dense
 
 from slidesquare_env import SquareEnv
 
-square_env=SquareEnv(2)
+# SN=2
+# HLN=8
+SN=3
+HLN=32
+
+square_env=SquareEnv(SN)
 
 # model
 model = Sequential()
-#model.add(Dense(32, activation='relu',input_shape=np.prod(np.asarray(square_env.encoded_shape))))
-model.add(Dense(8, activation='relu',input_shape=(np.prod(square_env.encoded_shape),)))
+model.add(Dense(HLN, activation='relu',input_shape=np.prod(np.asarray(square_env.encoded_shape))))
 # model.add(Dense(len(square_env.action_enum), activation='softmax'))
 model.add(Dense(1))
 
@@ -68,18 +72,16 @@ while 1 :
 
 print("done!")
 
-# display
-a=[ [0,0,1,1],
-    [0,1,0,1],
-    [0,1,1,0],
-    [1,0,0,1],
-    [1,0,1,0],
-    [1,1,0,0]
-    ]
-encs=np.zeros((6,8))
-for i in range(len(a)) :
-    encs[i,:]=np.ravel(square_env.encode_inplace(square_env.ConvertToState(a[i])))
+# store data
+from all_pos_gen import all_pos_gen
+all_pos_list=all_pos_gen(SN)
+
+encs=np.zeros((len(all_pos_list),SN*SN*SN))
+for i in range(len(all_pos_list)) :
+    encs[i,:]=np.ravel(square_env.encode_inplace(square_env.ConvertToState(all_pos_list[i])))
 
 v_list=model.predict(encs)
 
-print(v_list)
+fid=open("","w")
+np.savetxt(fid,v_list)
+fid.close()
