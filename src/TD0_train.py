@@ -16,12 +16,12 @@ square_env=SquareEnv(SN)
 
 # model
 model = Sequential()
-model.add(Dense(HLN, activation='relu',input_shape=np.prod(np.asarray(square_env.encoded_shape))))
+model.add(Dense(HLN, activation='relu',input_shape=(np.prod(square_env.encoded_shape),)))
 # model.add(Dense(len(square_env.action_enum), activation='softmax'))
 model.add(Dense(1))
 
 model.compile(loss=keras.losses.MeanSquaredError(),
-              optimizer=keras.optimizers.RMSprop(lr=3e-3))
+              optimizer=keras.optimizers.RMSprop(lr=1e-4))
 
 # initial scramble
 a=square_env.scramble_square(20)    # initial state
@@ -33,7 +33,7 @@ gamma=0.9
 ## init buffer
 x_train_buf=np.zeros((0,np.prod(square_env.encoded_shape)))
 y_train_buf=np.zeros((0,))
-Buf_Capacity=40              # buf max len
+Buf_Capacity=300              # buf max len
 
 def prepare_training_data(st_list) :
     state_list=[s[1] for s in st_list]
@@ -59,29 +59,29 @@ def Fill_Buf(x_train, y_train) :
     y_train_buf=np.concatenate([y_train_buf[Rem:],y_train])
 
 ## training
-N=10    # new moves
+N=50    # new moves
 cnt=0
 while 1 :
     st_list = square_env.scramble_square(N, include_initial=state)
     x_train, y_train = prepare_training_data(st_list)
     state=st_list[-1]
     Fill_Buf(x_train, y_train)
-    model.fit(x_train_buf,y_train_buf,epochs=10,verbose=3)
+    model.fit(x_train_buf,y_train_buf,epochs=10,verbose=1)
     cnt+=1
-    if cnt>100 : break
+    if cnt>1000 : break
 
 print("done!")
 
 # store data
-from all_pos_gen import all_pos_gen
-all_pos_list=all_pos_gen(SN)
+from gen_all_pos import gen_all_pos
+all_pos_list=gen_all_pos(SN)
 
 encs=np.zeros((len(all_pos_list),SN*SN*SN))
 for i in range(len(all_pos_list)) :
-    encs[i,:]=np.ravel(square_env.encode_inplace(square_env.ConvertToState(all_pos_list[i])))
+    encs[i,:]=np.ravel(square_env.encode_inplace(square_env.ConvertToState(all_pos_list[i].astype(int))))
 
 v_list=model.predict(encs)
 
-fid=open("","w")
+fid=open("sl_"+str(SN)+".txt","w")
 np.savetxt(fid,v_list)
 fid.close()
