@@ -38,10 +38,10 @@ def GetNewStateAndReward(idx,Move) :
     st1=square_env.transform(st,square_env.action_enum[Move])
     # reward
     cost=square_env.state_cost(st)
-    # cost1=square_env.state_cost(st1)
-    # R=cost1-cost
-    R=cost
-    R=max(R,0)
+    cost1=square_env.state_cost(st1)
+    R=cost1-cost
+    # R=cost
+    # R=max(R,0)
     return idx_states[st1], R
 
 V=np.zeros((numstates))
