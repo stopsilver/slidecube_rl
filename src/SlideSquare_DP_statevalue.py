@@ -16,6 +16,8 @@ from gen_all_pos import gen_all_pos
 allpos_list=gen_all_pos(N)
 numstates=len(allpos_list)
 
+V=np.zeros((numstates))
+
 states={}
 idx_states={}
 for i in range(numstates) :
@@ -32,34 +34,33 @@ for i in range(numstates) :
 # mydict = {'george': 16, 'amber': 19}
 # print(list(mydict.keys())[list(mydict.values()).index(16)])  # Prints george
 
-def GetNewStateAndReward(idx,Move) :
-    # move to new state
+def GetReturnEstimation(idx,deep) :
+    # generate ramdom route
     st=states[idx]
-    st1=square_env.transform(st,square_env.action_enum[Move])
-    # reward
-    cost=square_env.state_cost(st)
-    # cost1=square_env.state_cost(st1)
-    # R=cost1-cost
-    R=cost
-    R=max(R,0)
-    return idx_states[st1], R
-
-V=np.zeros((numstates))
+    st_list=[]
+    for i in range(deep) :
+        st_list.append(square_env.transform(st,square_env.sample_action()))
+    # return estimation
+    G=V[idx_states[st_list[-1]]]
+    for pos in reversed(st_list[0:-1]) :
+        G=G*gamma+square_env.state_cost(pos)
+    return G
 
 gamma=0.9
 
+alpha=0.5
+NumRoutes=20
+deep=4
+
 for k in range(100) :            # iteration
-    Vnew=np.zeros((numstates))
+    Vnew=V.copy()
     for sidx in range(numstates) :         # for all states
         s=0
-        for j in range(len(square_env.action_enum)) :
-            sidx1,R=GetNewStateAndReward(sidx,j)
-            SV1=V[sidx1]
-            s=s+(R+gamma*SV1)
-
-        s=s/len(square_env.action_enum)
-        Vnew[sidx]=s
-
+        for j in range(NumRoutes) :
+            G=GetReturnEstimation(sidx,deep)
+            s+=G
+        s=s/NumRoutes
+        Vnew[sidx]=Vnew[sidx]*(1-alpha)+s*alpha
     V=Vnew
 
     print('k='+str(k+1))
