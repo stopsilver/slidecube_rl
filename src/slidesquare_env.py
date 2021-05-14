@@ -15,6 +15,7 @@ class SquareEnv:
 
         self.N=N
         self.initial_state = State_type(sq_pos=tuple(itertools.chain.from_iterable(itertools.repeat(x, N) for x in range(N))))
+        self.goal_cost=self.state_cost(self.initial_state)
 
         ### Global Init
         j=0
@@ -87,7 +88,8 @@ class SquareEnv:
     # wrapper functions
     def is_goal(self, state):
         assert isinstance(state, State_type)
-        return state.sq_pos == initial_state.sq_pos
+#        return state.sq_pos == initial_state.sq_pos
+        return self.state_cost(state)==self.goal_cost
 
     def transform(self, state, action):
         assert isinstance(state, State_type)

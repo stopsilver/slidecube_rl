@@ -38,7 +38,7 @@ def gen_all_pos(N) :
         return idx
 
     def idx2pos(enum_idx,tile_list,tile_num,n) :
-        pos=-np.ones((n))
+        pos=-np.ones((n),dtype=int)
 
         for i in range(len(tile_list)-1,-1,-1) :
             # get partial enumeration
