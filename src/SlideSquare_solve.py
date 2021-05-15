@@ -29,7 +29,9 @@ def GetScore(s) :
     return V[idx]
 
 def GetReward(st0,st1) :
-    return min(square_env.state_cost(st1)-square_env.state_cost(st0),0)
+    if square_env.is_goal(st1) : r=0
+    else : r=-1
+    return r
 
 def GetBestAction(env,s) :
     # global V

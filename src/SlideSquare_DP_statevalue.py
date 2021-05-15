@@ -35,42 +35,55 @@ for i in range(numstates) :
 # print(list(mydict.keys())[list(mydict.values()).index(16)])  # Prints george
 
 def GetReward(st0,st1) :
-    return min(square_env.state_cost(st1)-square_env.state_cost(st0),0)
+    if square_env.is_goal(st1) : r=0
+    else : r=-1
+    return r
 
-def GetReturnEstimation(idx,deep) :
-    # generate random route
+# def GetReturnEstimation(idx,deep) :
+#     # generate random route
+#     st=states[idx]
+#     st_list=[]
+#     for i in range(deep) :
+#         if not square_env.is_goal(st) :
+#             st=square_env.transform(st,square_env.sample_action())
+#         st_list.append(st)
+#     # reward list
+#     r_list=[]
+#     for i in range(len(st_list[0:-1])) :
+#         r_list.append(GetReward(st_list[i],st_list[i+1]))
+
+#     # return estimation
+#     G=V[idx_states[st_list[-1]]]
+#     for r in reversed(r_list) :
+#         G=G*gamma+r
+#     return G
+
+def GetNewStateAndReward(idx,Move) :
+    # move to new state
     st=states[idx]
-    st_list=[]
-    for i in range(deep) :
-        if not square_env.is_goal(st) :
-            st=square_env.transform(st,square_env.sample_action())
-        st_list.append(st)
-    # reward list
-    r_list=[]
-    for i in range(len(st_list[0:-1])) :
-        r_list.append(GetReward(st_list[i],st_list[i+1]))
-
-    # return estimation
-    G=V[idx_states[st_list[-1]]]
-    for r in reversed(r_list) :
-        G=G*gamma+r
-    return G
+    if square_env.is_goal(st) : return 0,0
+    st1=square_env.transform(st,square_env.action_enum[Move])
+    # reward
+    R=GetReward(st,st1)
+    return idx_states[st1], R
 
 gamma=0.9
 
-alpha=0.3
-NumRoutes=30
-deep=5
+# alpha=1
+# NumRoutes=30
+# deep=1
 
 for k in range(100) :            # iteration
     Vnew=V.copy()
     for sidx in range(numstates) :         # for all states
         s=0
-        for j in range(NumRoutes) :
-            G=GetReturnEstimation(sidx,deep)
-            s+=G
-        s=s/NumRoutes
-        Vnew[sidx]=Vnew[sidx]*(1-alpha)+s*alpha
+        for j in range(len(square_env.action_enum)) :
+            sidx1,R=GetNewStateAndReward(sidx,j)
+            SV1=V[sidx1]
+            s=s+(R+gamma*SV1)
+
+        s=s/len(square_env.action_enum)
+        Vnew[sidx]=s # Vnew[sidx]*(1-alpha)+s*alpha
     V=Vnew
 
     print('k='+str(k+1))
