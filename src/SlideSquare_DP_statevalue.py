@@ -3,10 +3,6 @@
 import numpy as np
 from slidesquare_env import SquareEnv
 
-# slidesquare_type='square4x4'   # in reality "2x2"
-
-# square_env=slidesquares.get(slidesquare_type)
-
 square_env=SquareEnv(3)
 
 ## generate list of all states
@@ -26,37 +22,10 @@ for i in range(numstates) :
     states[i]=rn
     idx_states[rn]=i
 
-## render all states
-# for key in states.keys() :
-#     print(square_env.render(states[key]))
-
-## interesting idea from (https://stackoverflow.com/questions/8023306/get-key-by-value-in-dictionary)
-# mydict = {'george': 16, 'amber': 19}
-# print(list(mydict.keys())[list(mydict.values()).index(16)])  # Prints george
-
 def GetReward(st0,st1) :
     if square_env.is_goal(st1) : r=0
     else : r=-1
     return r
-
-# def GetReturnEstimation(idx,deep) :
-#     # generate random route
-#     st=states[idx]
-#     st_list=[]
-#     for i in range(deep) :
-#         if not square_env.is_goal(st) :
-#             st=square_env.transform(st,square_env.sample_action())
-#         st_list.append(st)
-#     # reward list
-#     r_list=[]
-#     for i in range(len(st_list[0:-1])) :
-#         r_list.append(GetReward(st_list[i],st_list[i+1]))
-
-#     # return estimation
-#     G=V[idx_states[st_list[-1]]]
-#     for r in reversed(r_list) :
-#         G=G*gamma+r
-#     return G
 
 def GetNewStateAndReward(idx,Move) :
     # move to new state
@@ -67,20 +36,19 @@ def GetNewStateAndReward(idx,Move) :
     R=GetReward(st,st1)
     return idx_states[st1], R
 
-gamma=0.9
+def GetReturnEstimation(idx) :
+    sidx1,R=GetNewStateAndReward(idx,j)
+    SV1=V[sidx1]
+    return (R+gamma*SV1)
 
-# alpha=1
-# NumRoutes=30
-# deep=1
+gamma=0.9
 
 for k in range(100) :            # iteration
     Vnew=V.copy()
     for sidx in range(numstates) :         # for all states
         s=0
         for j in range(len(square_env.action_enum)) :
-            sidx1,R=GetNewStateAndReward(sidx,j)
-            SV1=V[sidx1]
-            s=s+(R+gamma*SV1)
+            s=s+GetReturnEstimation(sidx)
 
         s=s/len(square_env.action_enum)
         Vnew[sidx]=s # Vnew[sidx]*(1-alpha)+s*alpha

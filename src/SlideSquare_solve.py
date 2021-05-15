@@ -23,7 +23,6 @@ print(square_env.render(state))
 def GetScore(s) :
     global V
     global all_pos_list
-    # idx=all_pos_list.all(np.array(s.sq_pos))
     a=[(x==s.sq_pos).all() for x in all_pos_list]
     idx=a.index(True)
     return V[idx]
