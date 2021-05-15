@@ -214,7 +214,7 @@ class SquareEnv:
         N=self.N
 
         def GetHorizontalAlingment(a) :
-            r=[i for i, j in zip(a[0:-1], a[1:]) if i == j]
+            r=[i for i, j in zip(a, a[1:]+ (a[0],)) if i == j]
             return len(r)
 
         assert isinstance(state, State_type)

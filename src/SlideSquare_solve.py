@@ -28,13 +28,17 @@ def GetScore(s) :
     idx=a.index(True)
     return V[idx]
 
+def GetReward(st0,st1) :
+    return min(square_env.state_cost(st1)-square_env.state_cost(st0),0)
+
 def GetBestAction(env,s) :
     # global V
     G=[]
     gamma=0.9
     for i in range(len(env.action_enum)) :
         s1=env.transform(s,env.action_enum[i])
-        r=env.state_cost(s1)
+        # r=env.state_cost(s1)
+        r=GetReward(s,s1)
         V1=GetScore(s1)
         G.append(r+gamma*V1)
     return G.index(max(G))

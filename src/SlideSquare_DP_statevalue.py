@@ -34,23 +34,33 @@ for i in range(numstates) :
 # mydict = {'george': 16, 'amber': 19}
 # print(list(mydict.keys())[list(mydict.values()).index(16)])  # Prints george
 
+def GetReward(st0,st1) :
+    return min(square_env.state_cost(st1)-square_env.state_cost(st0),0)
+
 def GetReturnEstimation(idx,deep) :
-    # generate ramdom route
+    # generate random route
     st=states[idx]
     st_list=[]
     for i in range(deep) :
-        st_list.append(square_env.transform(st,square_env.sample_action()))
+        if not square_env.is_goal(st) :
+            st=square_env.transform(st,square_env.sample_action())
+        st_list.append(st)
+    # reward list
+    r_list=[]
+    for i in range(len(st_list[0:-1])) :
+        r_list.append(GetReward(st_list[i],st_list[i+1]))
+
     # return estimation
     G=V[idx_states[st_list[-1]]]
-    for pos in reversed(st_list[0:-1]) :
-        G=G*gamma+square_env.state_cost(pos)
+    for r in reversed(r_list) :
+        G=G*gamma+r
     return G
 
 gamma=0.9
 
-alpha=0.5
-NumRoutes=20
-deep=4
+alpha=0.3
+NumRoutes=30
+deep=5
 
 for k in range(100) :            # iteration
     Vnew=V.copy()
