@@ -15,6 +15,7 @@ class SquareEnv:
 
         self.N=N
         self.initial_state = State_type(sq_pos=tuple(itertools.chain.from_iterable(itertools.repeat(x, N) for x in range(N))))
+        self.goal_cost=self.state_cost(self.initial_state)
 
         ### Global Init
         j=0
@@ -44,7 +45,6 @@ class SquareEnv:
             for j in range(1,N) :
                 s1='X_'+str(i).zfill(2)+'_'+str(j+1).zfill(2)
                 s2='X_'+str(i).zfill(2)+'_'+str(N-(j+1)).zfill(2)
-                # k=j+(N-1)*i
                 Action[k]=Action_Type(actidx=k,actstr=s1)
                 k=k+1
                 self._inverse_action[s1]=s2
@@ -52,7 +52,6 @@ class SquareEnv:
             for j in range(1,N) :
                 s1='Y_'+str(i).zfill(2)+'_'+str(j+1).zfill(2)
                 s2='Y_'+str(i).zfill(2)+'_'+str(4*N-(j+1)).zfill(2)
-                # k=j+(4*N-1)*i+((4*N-1)*N)
                 Action[k]=Action_Type(actidx=k,actstr=s1)
                 self._inverse_action[s1]=s2
                 k=k+1
@@ -63,31 +62,11 @@ class SquareEnv:
 
         # colors (for visualization)
         self.sq_colors = ['W','R','G','B']   # currently upto 4x4
-### /Global Init
-
-
-        # self.name = name
-        # self._state_type = state_type
-        # self._action_type = action_type
-        # self.initial_state = initial_state
-        # self._is_goal_pred = is_goal_pred
-        # self.action_enum = action_enum
-        # self._transform_func = transform_func
-        # self._inverse_action_func = inverse_action_func
-        # self._same_layer_action = same_layer_action
-        # self._render_func = render_func
-        # self.encoded_shape = encoded_shape
-        # self._encode_func = encode_func
-        # self._state_cost_func=state_cost_func
-        # self._convert_to_state_func=convert_to_state_func
-
-    # def __repr__(self):
-    #     return "SquareEnv(%r)" % self.name
 
     # wrapper functions
     def is_goal(self, state):
         assert isinstance(state, State_type)
-        return state.sq_pos == initial_state.sq_pos
+        return self.state_cost(state)==self.goal_cost
 
     def transform(self, state, action):
         assert isinstance(state, State_type)
@@ -147,8 +126,6 @@ class SquareEnv:
     def sample_action(self, prev_action=None):
         while True:
             res = self.action_enum[random.randrange(len(self.action_enum))]
-            # if prev_action is None or self.inverse_action(res) != prev_action:
-            #     return res
             if prev_action is None :
                 return res  
             if self._same_layer_action(res,prev_action) == False :
@@ -212,7 +189,7 @@ class SquareEnv:
         N=self.N
 
         def GetHorizontalAlingment(a) :
-            r=[i for i, j in zip(a[0:-1], a[1:]) if i == j]
+            r=[i for i, j in zip(a, a[1:]+ (a[0],)) if i == j]
             return len(r)
 
         assert isinstance(state, State_type)
@@ -224,22 +201,3 @@ class SquareEnv:
 
     def ConvertToState(self,a):
         return State_type(sq_pos=tuple(a))
-
-
-# def register(square_env):
-#     assert isinstance(square_env, SquareEnv)
-#     global _registry
-
-#     if square_env.name in _registry:
-#         log.warning("Square environment %s is already registered, ignored", square_env)
-#     else:
-#         _registry[square_env.name] = square_env
-
-
-# def get(name):
-#     assert isinstance(name, str)
-#     return _registry.get(name)
-
-
-# def names():
-#     return list(sorted(_registry.keys()))
