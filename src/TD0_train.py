@@ -21,7 +21,7 @@ model.add(Dense(HLN, activation='relu',input_shape=(np.prod(square_env.encoded_s
 model.add(Dense(1))
 
 model.compile(loss=keras.losses.MeanSquaredError(),
-              optimizer=keras.optimizers.RMSprop(lr=1e-3))
+              optimizer=keras.optimizers.RMSprop(lr=1e-4))
 
 # initial scramble
 # a=square_env.scramble_square(20)    # initial state
@@ -35,19 +35,25 @@ x_train_buf=np.zeros((0,np.prod(square_env.encoded_shape)))
 y_train_buf=np.zeros((0,))
 Buf_Capacity=3000              # buf max len
 
+# # # forward
 # def prepare_training_data(st_list) :
 #     state_list=[s[1] for s in st_list]
-#     rewards=[0 if square_env.is_goal(s) else -1  for s in state_list[1:]]
-#     # current state-values
 #     encoded_states=np.zeros((len(state_list),np.prod(square_env.encoded_shape)))
 #     for i in range(len(state_list)) : encoded_states[i,:]=np.ravel(square_env.encode_inplace(state_list[i]))
+#     # compute state_values
 #     v_list=model.predict(encoded_states)
 #     v_list=np.squeeze(v_list)
 #     # prepare training data
 #     x_train=encoded_states[0:-1]
+#     rewards=[0 if square_env.is_goal(s) else -1  for s in state_list[1:]]
 #     y_train=(1-alpha)*v_list[0:-1]+alpha*(rewards+gamma*v_list[1:])
+#     # zero value for terminal state
+#     for i in range(len(x_train)) :
+#         if square_env.is_goal(state_list[i]) :
+#             y_train[i]=0
 #     return x_train, y_train
 
+# # # backward
 def prepare_training_data(st_list) :
     state_list=[s[1] for s in st_list]
     encoded_states=np.zeros((len(state_list),np.prod(square_env.encoded_shape)))
@@ -56,13 +62,13 @@ def prepare_training_data(st_list) :
     v_list=model.predict(encoded_states)
     v_list=np.squeeze(v_list)
     # prepare training data
-    x_train=encoded_states[0:-1]
-    rewards=[0 if square_env.is_goal(s) else -1  for s in state_list[1:]]
-    y_train=(1-alpha)*v_list[0:-1]+alpha*(rewards+gamma*v_list[1:])
+    x_train=encoded_states[1:]
+    rewards=[0 if square_env.is_goal(s) else -1  for s in state_list[0:-1]]
+    y_train=(1-alpha)*v_list[1:]+alpha*(rewards+gamma*v_list[0:-1])
     # zero value for terminal state
-    for i in range(len(x_train)) :
+    for i in range(1,len(state_list)) :
         if square_env.is_goal(state_list[i]) :
-            y_train[i]=0
+            y_train[i-1]=0
     return x_train, y_train
 
 def Fill_Buf(x_train, y_train) :
