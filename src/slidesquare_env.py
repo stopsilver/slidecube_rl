@@ -140,7 +140,7 @@ class SquareEnv:
     def is_state(self, state):
         return isinstance(state, self._state_type)
 
-    def scramble_square(self, scrambles_count, return_inverse=False, include_initial=False):
+    def scramble_square(self, scrambles_count, initial_state=None, return_inverse=False, include_initial=False):
         """
         Generate sequence of random square scrambles
         :param scrambles_count: count of scrambles to perform
@@ -150,7 +150,10 @@ class SquareEnv:
         assert isinstance(scrambles_count, int)
         assert scrambles_count > 0
 
-        state = self.initial_state
+        if initial_state==None :
+            state = self.initial_state
+        else :
+            state = initial_state
         result = []
         if include_initial:
             assert not return_inverse

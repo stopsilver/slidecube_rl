@@ -12,7 +12,7 @@ from gen_all_pos import gen_all_pos
 allpos_list=gen_all_pos(N)
 numstates=len(allpos_list)
 
-V=np.random.randn((numstates))
+V=np.zeros((numstates))
 pl=np.zeros((numstates),dtype=np.int)
 
 states={}
@@ -24,9 +24,10 @@ for i in range(numstates) :
     idx_states[rn]=i
 
 def GetReward(st0,st1) :
-    if square_env.is_goal(st1) : r=0
-    else : r=-1
-    return r
+    # if square_env.is_goal(st1) : r=0
+    # else : r=-1
+    # return r
+    return -1
 
 def GetNewStateAndReward(idx,Move) :
     # move to new state
@@ -72,6 +73,8 @@ while True :
             pl[sidx]=np.argmax(v)
 
     if np.array_equal(pl_old,pl) : break
+
+print('done!')
 
 # save state-value function to 
 fid = open("statevalue_"+str(N)+"x"+str(N)+".txt", "w")
