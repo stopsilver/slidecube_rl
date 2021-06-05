@@ -33,9 +33,9 @@ losses = {
 	"action": "categorical_crossentropy",
 	"state": "mean_squared_error",
 }
-lossWeights = {"action": 3.0, "state": 1.0}
+lossWeights = {"action": 1.0, "state": 1.0}
 model_val.compile(loss=losses,
-              optimizer=keras.optimizers.RMSprop(lr=1e-4))
+              optimizer=keras.optimizers.RMSprop(lr=1e-3))
 
 model_act=clone_model(model_val)
 model_act.set_weights(model_val.get_weights())
@@ -157,16 +157,16 @@ def store_data(env,model) :
 
     [_,v_list]=model.predict(encs)
 
-    fid=open("sl_"+str(SN)+".txt","w")
+    fid=open("sl_"+str(SN)+"x"+str(SN)+".txt","w")
     np.savetxt(fid,v_list)
     fid.close()
 
-    model.save("sl_"+str(SN)+".h5")
+    model.save("sl_stval_"+str(SN)+"x"+str(SN)+".h5")
 
 ## init buffer
 train_batch_size=250
 train_buf_size=1000
-train_scramble_depth=10
+train_scramble_depth=5
 
 # print("Generate scramble buffer...")
 # scramble_buf = collections.deque(maxlen=scramble_buffer_batches*train_batch_size)
@@ -178,7 +178,7 @@ while 1 :
     x_t, y_policy_t, y_value_t = prepare_batch(square_env, model_val,model_act,train_buf_size,train_scramble_depth)
     print("Pushed new data in train buffer")
 
-    model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=200,verbose=1)
+    model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=20,verbose=1)
 
     cnt+=1
     print("==> cnt = "+str(cnt))

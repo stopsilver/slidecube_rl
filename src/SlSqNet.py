@@ -12,7 +12,7 @@ def SlSqNet(input_shape,
     x=Dense(L2_num,activation='relu')(x)
     
     a=Dense(A1_num,activation='relu')(x)
-    a=Dense(Aout_num,name='action')(a)
+    a=Dense(Aout_num,activation='softmax',name='action')(a)
 
     v=Dense(V1_num,activation='relu')(x)
     v=Dense(1,name='state')(v)
