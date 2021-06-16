@@ -102,11 +102,11 @@ def prepare_batch(env, model_val, model_act, buf_size, scramble_depth):
     data = make_pilot_data_buffer(env, buf_size, scramble_depth)
     states, depths, is_goals, explored_states, explored_goals = zip(*data)
 
-    # handle visited states
-    states = np.stack(states)
-    shape = states.shape
-    [act_t,_] = model_act.predict(np.reshape(states,(shape[0], shape[2]*shape[3])))
-    act_t=np.argmax(act_t,axis=-1)
+    # # handle visited states
+    # states = np.stack(states)
+    # shape = states.shape
+    # [act_t,_] = model_act.predict(np.reshape(states,(shape[0], shape[2]*shape[3])))
+    # act_t=np.argmax(act_t,axis=-1)
 
     # handle explored states
     explored_states = np.stack(explored_states)
@@ -114,33 +114,36 @@ def prepare_batch(env, model_val, model_act, buf_size, scramble_depth):
     
     [_,value_t] = model_val.predict(np.reshape(explored_states,(shape[0]*shape[1], shape[2]*shape[3])))
     value_t = value_t.reshape(shape[0], shape[1])
-    value_train_t=value_t[range(shape[0]),act_t]
+    
+    # value_train_t=value_t[range(shape[0]),act_t]
+    # R=-1
+    # value_train_t = value_train_t * gamma + R
+    # value_train_t=np.reshape(value_train_t,(shape[0],1))
     R=-1
-    value_train_t = value_train_t * gamma + R
-    value_train_t=np.reshape(value_train_t,(shape[0],1))
+    value_t = value_t * gamma + R
 
-    # force goal states to get 0
-    explored_goals=np.stack(explored_goals)
-    explored_goals=explored_goals[range(shape[0]),act_t]
-    for i in range(len(explored_goals)) :
-        if explored_goals[i]==True :
-           value_train_t[i]=R
-        if is_goals[i]==True :
-           value_train_t[i]=0
+    # # force goal states to get 0
+    # explored_goals=np.stack(explored_goals)
+    # explored_goals=explored_goals[range(shape[0]),act_t]
+    # for i in range(len(explored_goals)) :
+    #     if explored_goals[i]==True :
+    #        value_train_t[i]=R
+    #     if is_goals[i]==True :
+    #        value_train_t[i]=0
 
     max_act_t = np.argmax(value_t, axis=1)
-    # max_val_t=value_t[range(shape[0]),max_act_t]
+    max_val_t=value_t[range(shape[0]),max_act_t]
     
-    # goal_indices = np.nonzero(is_goals)
-    # max_val_t[goal_indices] = 0.0
-    # max_act_t[goal_indices] = 0
+    goal_indices = np.nonzero(is_goals)
+    max_val_t[goal_indices] = 0.0
+    max_act_t[goal_indices] = 0
 
     enc_input = np.reshape(np.stack(states),(shape[0], shape[2]*shape[3]))
-    # weights = np.reshape(1/np.asarray(depths),(shape[0],1))
+    weights = np.reshape(1/np.asarray(depths),(shape[0],))
     max_act_t=np.eye(shape[1])[max_act_t]
-    # max_val_t=np.reshape(max_val_t,(shape[0],1))
+    max_val_t=np.reshape(max_val_t,(shape[0],1))
     
-    return enc_input, max_act_t, value_train_t
+    return enc_input, max_act_t, max_val_t, weights
 
 
 def store_data(env,model_val) :
@@ -148,7 +151,7 @@ def store_data(env,model_val) :
 
 ## init buffer
 train_batch_size=250
-train_buf_size=10000
+train_buf_size=1000
 train_scramble_depth=15
 
 # print("Generate scramble buffer...")
@@ -158,14 +161,15 @@ train_scramble_depth=15
 cnt=0
 while 1 :
     print("Preparing new batch")
-    x_t, y_policy_t, y_value_t = prepare_batch(cube_env, model_val,model_act,train_buf_size,train_scramble_depth)
+    x_t, y_policy_t, y_value_t, w = prepare_batch(cube_env, model_val,model_act,train_buf_size,train_scramble_depth)
 
-    model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=20,verbose=1)
+    model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=10,verbose=1,
+                sample_weight={"action": w,	"state": w})
 
     cnt+=1
     print("==> cnt = "+str(cnt))
 
-    if cnt % 5 == 0 :
+    if cnt % 1 == 0 :
         model_act.set_weights(model_val.get_weights())
         print("model_act updated")
 
