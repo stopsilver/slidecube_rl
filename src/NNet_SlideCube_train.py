@@ -2,6 +2,7 @@
 
 import numpy as np
 from tensorflow import keras
+from tensorflow.keras import backend as K
 from tensorflow.keras.models import Sequential, clone_model
 from tensorflow.keras.layers import Dense
 # import collections
@@ -9,14 +10,25 @@ import random
 
 from slidecube_env import CubeEnv
 
-SN=2
+# SN=2
+# L1_num=2048
+# L2_num=1024
+# A1_num=256
+# V1_num=256
 
+SN=3
 L1_num=4096
 L2_num=2048
 A1_num=512
 V1_num=512
 
 gamma=1 # 0.9
+
+lr=1e-4
+lr_decay_batches=50
+lr_reduce_rate=0.95
+
+use_weight=False
 
 cube_env=CubeEnv(SN)
 
@@ -32,10 +44,10 @@ losses = {
 }
 lossWeights = {"action": 1.0, "state": 1.0}
 model_val.compile(loss=losses,
-              optimizer=keras.optimizers.RMSprop(lr=1e-4))
+              optimizer=keras.optimizers.RMSprop(lr=lr))
 
-model_act=clone_model(model_val)
-model_act.set_weights(model_val.get_weights())
+# model_act=clone_model(model_val)
+# model_act.set_weights(model_val.get_weights())
 
 def encode_states(env, states):
     assert isinstance(env, CubeEnv)
@@ -90,7 +102,7 @@ def make_pilot_data_buffer(env, buf_size, scramble_depth):
         result.append((enc_s, depth, env.is_goal(s), enc_states, goals))
     return result
 
-def prepare_batch(env, model_val, model_act, buf_size, scramble_depth):
+def prepare_batch(env, model_val, buf_size, scramble_depth):
     """
     Sample batch of given size from scramble buffer produced by make_scramble_buffer
     :param scramble_buffer: scramble buffer
@@ -160,24 +172,33 @@ train_scramble_depth=15
 
 cnt=0
 while 1 :
-    print("Preparing new batch")
-    x_t, y_policy_t, y_value_t, w = prepare_batch(cube_env, model_val,model_act,train_buf_size,train_scramble_depth)
 
-    model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=10,verbose=1,
+    if (cnt+1) % lr_decay_batches == 0:
+            lr=K.get_value(model_val.optimizer.lr)*lr_reduce_rate
+            K.set_value(model_val.optimizer.lr,lr)
+            print("LR set to " + str(lr))
+
+    print("Preparing new batch")
+    x_t, y_policy_t, y_value_t, w = prepare_batch(cube_env, model_val,train_buf_size,train_scramble_depth)
+
+    if use_weight==True :
+        model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=10,verbose=1,
                 sample_weight={"action": w,	"state": w})
+    else :
+        model_val.fit(x_t,[y_policy_t, y_value_t],batch_size=train_batch_size,epochs=10,verbose=1)
 
     cnt+=1
     print("==> cnt = "+str(cnt))
 
-    if cnt % 1 == 0 :
-        model_act.set_weights(model_val.get_weights())
-        print("model_act updated")
+    # if cnt % 1 == 0 :
+    #     model_act.set_weights(model_val.get_weights())
+    #     print("model_act updated")
 
-    if cnt % 5 ==0 :
+    if cnt % 10 == 0 :
         store_data(cube_env,model_val)
         print("model stored")
 
-    if cnt>100 : break
+    if cnt>1000 : break
 
 print("done!")
 
