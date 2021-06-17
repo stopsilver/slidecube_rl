@@ -164,7 +164,7 @@ def store_data(env,model_val) :
 ## init buffer
 train_batch_size=250
 train_buf_size=1000
-train_scramble_depth=15
+train_scramble_depth=20
 
 # print("Generate scramble buffer...")
 # scramble_buf = collections.deque(maxlen=scramble_buffer_batches*train_batch_size)

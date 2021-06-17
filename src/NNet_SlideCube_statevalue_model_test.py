@@ -4,7 +4,7 @@ import numpy as np
 from tensorflow import keras
 from slidesquare_env import SquareEnv
 
-SN=2
+SN=3
 
 from slidecube_env import CubeEnv
 
@@ -31,7 +31,7 @@ def encode_states(env, states):
 
     return encoded
 
-scramble_depth=9
+scramble_depth=20
 probs=[1/len(cube_env.init_state_list)]*len(cube_env.init_state_list)
 test_num=20
 x=np.zeros((0,np.prod(cube_env.encoded_shape)))
