@@ -9,7 +9,9 @@ cube_env=CubeEnv(SN)
 
 gamma=1
 
-ep=0.
+statevalue_policy=True         # True - state-value policy, action-value policy
+
+ep=0.       # set ep(silon) > 0 for epsilon gradient policy (not effective)
 
 use_weight=False
 if use_weight :
@@ -49,7 +51,7 @@ def encode_states(env, states):
 
     return encoded
 
-def GetBestAction(env,s) :
+def GetBestAction_stval(env,s) :
     states, goals = env.explore_state(s)
     idx=[i for i, x in enumerate(goals) if x]
     if len(idx)>0 :
@@ -64,6 +66,17 @@ def GetBestAction(env,s) :
     V=np.ravel(V)
 
     return np.argmax(V)
+
+def GetBestAction_actval(env,s) :
+    enc_s = encode_states(cube_env, [s])
+    A,_=model_val.predict(np.ravel(enc_s).reshape((1,-1)))
+    return np.argmax(A)
+
+def GetBestAction(env,s) :
+    if statevalue_policy :
+        return GetBestAction_stval(env,s)
+    else :
+        return GetBestAction_actval(env,s)
 
 def GetEpsPolicyAction(env,act_idx) :
     p=np.random.choice([True,False],p=[1-ep,ep])
