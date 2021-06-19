@@ -10,17 +10,17 @@ import random
 
 from slidecube_env import CubeEnv
 
-# SN=2
-# L1_num=2048
-# L2_num=1024
-# A1_num=256
-# V1_num=256
+SN=2
+L1_num=2048
+L2_num=1024
+A1_num=256
+V1_num=256
 
-SN=3
-L1_num=4096
-L2_num=2048
-A1_num=512
-V1_num=512
+# SN=3
+# L1_num=4096
+# L2_num=2048
+# A1_num=512
+# V1_num=512
 
 gamma=1 # 0.9
 
@@ -29,6 +29,11 @@ lr_decay_batches=50
 lr_reduce_rate=0.95
 
 use_weight=False
+if use_weight :
+    postfix="weighted"
+else :
+    postfix="pure"
+modelfilename="slcube_stval_"+str(SN)+"x"+str(SN)+"_"+postfix+".h5"
 
 cube_env=CubeEnv(SN)
 
@@ -159,12 +164,12 @@ def prepare_batch(env, model_val, buf_size, scramble_depth):
 
 
 def store_data(env,model_val) :
-    model_val.save("slcube_stval_"+str(SN)+"x"+str(SN)+".h5")
+    model_val.save(modelfilename)
 
 ## init buffer
 train_batch_size=250
 train_buf_size=1000
-train_scramble_depth=20
+train_scramble_depth=15
 
 # print("Generate scramble buffer...")
 # scramble_buf = collections.deque(maxlen=scramble_buffer_batches*train_batch_size)

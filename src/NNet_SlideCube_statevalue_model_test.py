@@ -2,16 +2,20 @@
 
 import numpy as np
 from tensorflow import keras
-from slidesquare_env import SquareEnv
-
-SN=3
-
 from slidecube_env import CubeEnv
 
+SN=2
 cube_env=CubeEnv(SN)
 
-## load policy NNet
-model_val=keras.models.load_model("slcube_stval_"+str(SN)+"x"+str(SN)+".h5")
+use_weight=False
+if use_weight :
+    postfix="weighted"
+else :
+    postfix="pure"
+modelfilename="slcube_stval_"+str(SN)+"x"+str(SN)+"_"+postfix+".h5"
+
+## load NNet
+model_val=keras.models.load_model(modelfilename)
 
 def encode_states(env, states):
     assert isinstance(env, CubeEnv)
