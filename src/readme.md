@@ -22,12 +22,16 @@ NNet_SlideSquare_train.py
 	Result :
 		sl_stval_3x3.h5 - NNet for state-value
 		sl_act_3x3.h5 - NNet for policy
-		sl_3x3.txt - state-value table for all states - compare it to statevalue_3x3.txt using natlab script below
+
+TD0_train.py
+	Result :
+		sl_3.txt - state-value table for all states - compare it to statevalue_3x3.txt using matlab script below
 		-----------------------------------------
 		a=load('statevalue_3x3.txt');
 		b=load('sl_3x3.txt');
 		plot([a b]);
 		-----------------------------------------
+
 NNet_SlideSquare_solve.py
 	solution demo for random scramble (uses sl_act_3x3.h5)
 	
@@ -43,6 +47,12 @@ NNet_SlideCube_train.py
 	train_scramble_depth=15		# 15 for 2x2; 20 for 3x3
 		Output :
 	generates model file (ex. "slcube_stval_2x2_pure.h5")
+	
+NNet_SlideCube_statevalue_model_test.py
+	---------------------------------
+	>> a=load('D:\Work\20210620\SlideSquare\cubestval.txt');
+	>> plot(a')
+	---------------------------------
 
 NNet_SlideCube_statevalue_model_test.py
 		Parameters :
